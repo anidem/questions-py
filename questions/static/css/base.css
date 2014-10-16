@@ -1,0 +1,9 @@
+/* base.css */
+body {
+  padding-top: 50px;
+}
+
+#footer {
+    text-align: center;
+    color: #fff;
+}
