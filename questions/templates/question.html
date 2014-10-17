@@ -3,13 +3,11 @@
 {% load staticfiles %}
 
 {% block content %}
-    {% if form.question.help_text == "incorrect" %}
-        <p class="label label-danger">{{ form.question.help_text }}</p>
-    {% else %}
-        <p class="label label-success">{{ form.question.help_text }}</p>
-    {% endif %}
+    <p class="label {% if form.question.help_text == 'incorrect' %} label-danger {% else %} label-success{% endif %}">
+        {{ form.question.help_text }}
+    </p>
     <form action="." method="post">{% csrf_token %}
         {{ form.as_p }}
-        <input type="submit" value="Submit">
+        <input type="submit" value="Check Your Answer">
     </form>
 {% endblock content %}

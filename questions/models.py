@@ -19,8 +19,8 @@ class AbstractQuestion(models.Model):
 
 class TextQuestion(AbstractQuestion):
     input_size = models.CharField(max_length=64, choices=[(
-        'short', 'short answer'), ('long', 'long input (essay, paragraph)')], default='short')
-    correct = models.TextField()
+        '1', 'short answer: (1 row 80 cols)'), ('5', 'sentence: (5 rows 80 cols'), ('15', 'paragraphs: (15 rows 80 cols)')], default='short')
+    correct = models.TextField(blank=True)
     
     def user_response(self, user):
         try:
