@@ -1,11 +1,14 @@
-<!-- comment question.html -->
+<!-- question.html -->
 {% extends "base.html" %}
 {% load staticfiles %}
 
 {% block content %}
+    <h1></h1>
+    {% if  form.question.help_text %}    
     <p class="label {% if form.question.help_text == 'incorrect' %} label-danger {% else %} label-success{% endif %}">
         {{ form.question.help_text }}
     </p>
+    {% endif %}
     <form action="." method="post">{% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Check Your Answer">

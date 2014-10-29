@@ -9,7 +9,7 @@ class OptionQuestionResponseForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(OptionQuestionResponseForm, self).__init__(*args, **kwargs)
-        
+
         # question and user are assigned by the caller of the form
         # assigning to local variables for readability
         question = self.initial['question']
@@ -63,20 +63,20 @@ class TextQuestionResponseForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(TextQuestionResponseForm, self).__init__(*args, **kwargs)
-        
+
         # question and user are assigned by the caller of the form
         # assigning to local variables for readability
         question = self.initial['question']
         user = self.initial['user']
-        
+
         # Initialize with question text
 
         self.fields['response'].label = question.display_text
-        self.fields['response'].widget.attrs={
-            'rows': question.input_size, 
+        self.fields['response'].widget.attrs = {
+            'rows': question.input_size,
             'cols': '80',
             'style': 'resize: vertical'
-            }            
+        }
 
         # Check for previous response to question by user
         try:
@@ -84,9 +84,9 @@ class TextQuestionResponseForm(ModelForm):
             self.initial['response'] = previous_response.response
 
             # Set user feedback info (correct or incorrect response)
-            print '|%s|'%question.correct
+            print '|%s|' % question.correct
             if question.correct:
-                print '|%s|'%question.correct
+                print '|%s|' % question.correct
                 if question.correct == previous_response.response:
                     self.fields['question'].help_text = 'correct'
                 else:
@@ -97,8 +97,8 @@ class TextQuestionResponseForm(ModelForm):
     def save(self):
         submitted_form = super(
             TextQuestionResponseForm, self).save(commit=False)
-        submitted_form.response = submitted_form.response.strip() # trim whitespace
-        
+        # trim whitespace
+        submitted_form.response = submitted_form.response.strip()
         try:
             previous_response = submitted_form.question.user_response(
                 submitted_form.user)

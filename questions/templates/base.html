@@ -48,14 +48,14 @@
       </div>
     </div>
 
-    <div class="container">
+    <div class="container"><div class="row">
     {% block content %}
       <div>
         <h1>For starters...</h1>
         <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>
       </div>
     {% endblock content %}
-    </div><!-- /.container -->
+    </div></div><!-- /.container -->
 
     <div id="footer" class="navbar navbar-inverse navbar-fixed-bottom">
         <div class="container">Powered by U</div>
@@ -63,6 +63,7 @@
     <!-- Core JavaScript -->
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="{% static 'js/questdev.js'%}"></script>
   </body>
 </html>
 
