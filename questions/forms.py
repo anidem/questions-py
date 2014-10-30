@@ -4,7 +4,6 @@ from django.forms import ModelForm
 
 from .models import TextQuestion, OptionQuestion, TextQuestionResponse, OptionQuestionResponse
 
-
 class OptionQuestionResponseForm(ModelForm):
 
     def __init__(self, *args, **kwargs):

@@ -42,8 +42,15 @@ class TextQuestion(AbstractQuestion):
     def get_form_class(self):
         return locate('questions.forms.TextQuestionResponseForm')
 
+    def correct_answer(self):
+        try:
+            return self.correct
+        except:
+            return None
+
     def user_response(self, user):
         try:
+            response = GenericRelation('QuestionResponse', related_query_name='user_response')
             return TextQuestionResponse.objects.filter(user=user.id).get(question=self.id)
         except:
             return None
@@ -73,7 +80,7 @@ class OptionQuestion(AbstractQuestion):
             options.append(option)
         return options
 
-    def correct_option(self):
+    def correct_answer(self):
         try:
             return self.options.filter(correct=True)[0]
         except:
@@ -89,7 +96,7 @@ class OptionQuestion(AbstractQuestion):
 class Option(models.Model):
 
     """
-    Stores a single option to included as a choice for a :mod:`questions.OptionQuestion`.
+    Stores a single option to list as a choice for a :model:`questions.OptionQuestion`.
     """
     question = models.ForeignKey(OptionQuestion, related_name='options')
     correct = models.BooleanField(default=False)
@@ -99,6 +106,11 @@ class Option(models.Model):
     def __unicode__(self):
         return self.display_text
 
+class QuestionResponse(TimeStampedModel):
+    user = models.ForeignKey(User, related_name='user_response')
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
 
 class OptionQuestionResponse(TimeStampedModel):
     user = models.ForeignKey(User)
@@ -130,8 +142,8 @@ class TextQuestionResponse(TimeStampedModel):
 class QuestionSequence(models.Model):
 
     """
-    A collection of questions of any defined type.
-    E.g., OptionQuestion or TextQuestion
+    A wrapper for set of questions of any defined type. This class models the
+    notion of a worksheet of questions e.g., OptionQuestion or TextQuestion
     """
     title = models.CharField(max_length=256)
     description = models.TextField()
@@ -139,7 +151,6 @@ class QuestionSequence(models.Model):
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
-        # Call the "real" save() method.
         super(QuestionSequence, self).save(*args, **kwargs)
 
     def __unicode__(self):

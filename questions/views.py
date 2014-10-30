@@ -4,14 +4,13 @@ from django.views.generic import FormView, TemplateView, CreateView, UpdateView,
 
 from .models import TextQuestion, OptionQuestion, OptionQuestionResponse, TextQuestionResponse, QuestionSequence, QuestionSequenceItem
 from .forms import OptionQuestionResponseForm, TextQuestionResponseForm
-from .mixins import AjaxableResponseMixin
 
 class HomeView(TemplateView):
     template_name = 'index.html'
 
-class QuestionResponseView(AjaxableResponseMixin, TemplateView):
-    model = QuestionSequence
+class QuestionResponseView(CreateView):
     template_name = 'question_embed.html'
+    model = None
     sequence = None
     question = None
     
