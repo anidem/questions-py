@@ -98,9 +98,18 @@ class OptionQuestion(AbstractQuestion):
         return self.options.filter(correct=True)
 
     def check_answer(self, answer):
+        # Return false if at least 1 incorrect selection found.
+        # TODO: fix by implementing list comparisons for checkbox selections.
         try:
-            opt = Option.objects.get(pk=answer)
-            return opt.correct
+            if self.input_select == 'checkbox':               
+                for i in answer:
+                    opt = Option.objects.get(pk=i)
+                    if not opt.correct: 
+                        return False
+                return True
+            else:  
+                opt = Option.objects.get(pk=answer)
+                return opt.correct
         except:
             return False
 
@@ -190,7 +199,7 @@ class QuestionSequence(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        return reverse('questions', args=[str(self.question.id)])
+        return reverse('question_response', args=[self.slug, '1'])
 
 
 class QuestionSequenceItem(models.Model):

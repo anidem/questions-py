@@ -32,9 +32,9 @@ class QuestionResponseForm(ModelForm):
             
             # Set user feedback info (correct or incorrect response)
             if answer_check:
-                self.fields['response'].help_text += 'correct'
+                self.fields['response'].help_text = '<span class="label label-success">correct</span>'
             else:
-                self.fields['response'].help_text += 'incorrect'
+                self.fields['response'].help_text = '<span class="label label-danger">incorrect</span>'
 
         except:
             pass
@@ -48,8 +48,14 @@ class QuestionResponseForm(ModelForm):
         user = submitted_form.user
         previous_response = question.user_response(user)
 
+        try:
+            if question.input_size:
+                submitted_form.response = submitted_form.response.strip()   
+        except:
+            pass
+
         if previous_response:
-            previous_response.response = submitted_form.response.strip()
+            previous_response.response = submitted_form.response
             previous_response.save()
         else:
             submitted_form.save()

@@ -3,6 +3,9 @@
 {% load staticfiles %}
 
 {% block content %}
-    <h1>Hi.</h1>
+    <h2>Sequences</h2>
+    {% for i in object_list %}
+    	<p><a href="{{ i.get_absolute_url }}">{{ i }}</a></p>
+    {% endfor %}
     
 {% endblock content %}

@@ -6,16 +6,16 @@
     <h1> {{ worksheet }} </h1>
     <div class="col-md-6">
         {% for i in question_list  %}
-            <span class="badge default">{{ forloop.counter }}</span> {{ i.content_object }}
+            <p>
+                <span class="badge default">{{ forloop.counter }}</span>
+                <a href="/questions/{{ worksheet.slug }}/{{ forloop.counter }}"> {{ i.content_object }}</a>
+            </p>
         {% endfor %}
     </div>
 
 
     <div class="col-md-6">
 
-        {% if  form.response.help_text %}    
-        <p class="label {% if form.response.help_text == 'incorrect' %} label-danger {% else %} label-success{% endif %}">{{ form.response.help_text }}</p>
-        {% endif %}
         <form id="response_form" action="" method="post">{% csrf_token %}
             {{ form.as_p }}
             <input id="chk_response_btn" type="submit" value="Check Your Answer">

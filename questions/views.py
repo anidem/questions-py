@@ -5,12 +5,13 @@ from django.views.generic import FormView, TemplateView, CreateView, UpdateView,
 from .models import TextQuestion, OptionQuestion, QuestionResponse, OptionQuestionResponse, TextQuestionResponse, QuestionSequence, QuestionSequenceItem
 from .forms import QuestionResponseForm, OptionQuestionResponseForm, TextQuestionResponseForm
 
-class HomeView(TemplateView):
+class HomeView(ListView):
+    model = QuestionSequence
     template_name = 'index.html'
 
 class QuestionResponseView(CreateView):
     model = QuestionResponse
-    template_name = 'question_embed.html'
+    template_name = 'question_sequence.html'
     form_class = QuestionResponseForm
     sequence = None
 
