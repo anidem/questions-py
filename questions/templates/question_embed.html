@@ -4,17 +4,22 @@
 
 {% block content %}
     <h1> {{ worksheet }} </h1>
-    <div class="col-md-6">Stuff here.</div>
     <div class="col-md-6">
-        {% if  form.question.help_text %}    
-        <p class="label {% if form.question.help_text == 'incorrect' %} label-danger {% else %} label-success{% endif %}">
-            {{ form.question.help_text }}
-        </p>
+        {% for i in question_list  %}
+            <span class="badge default">{{ forloop.counter }}</span> {{ i.content_object }}
+        {% endfor %}
+    </div>
+
+
+    <div class="col-md-6">
+
+        {% if  form.response.help_text %}    
+        <p class="label {% if form.response.help_text == 'incorrect' %} label-danger {% else %} label-success{% endif %}">{{ form.response.help_text }}</p>
         {% endif %}
-    <form id="response_form" method="post">{% csrf_token %}
-        {{ form.as_p }}
-        <input id="chk_response_btn" type="submit" value="Check Your Answer">
-    </form>
+        <form id="response_form" action="" method="post">{% csrf_token %}
+            {{ form.as_p }}
+            <input id="chk_response_btn" type="submit" value="Check Your Answer">
+        </form>
 
     </div>
 {% endblock content %}

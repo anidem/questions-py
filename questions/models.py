@@ -4,8 +4,9 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.utils.text import slugify
+from django import forms
 
-from pydoc import locate
+import json
 
 from model_utils.models import TimeStampedModel
 
@@ -33,25 +34,35 @@ class TextQuestion(AbstractQuestion):
     """
     A question type that accepts text input.
     """
-    input_size = models.CharField(max_length=64, choices=[(
-        '1', 'short answer: (1 row 80 cols)'), ('5', 'sentence: (5 rows 80 cols'), ('15', 'paragraph(s): (15 rows 80 cols)')], default='short')
+    input_size = models.CharField(max_length=64, choices=[
+        ('1', 'short answer: (1 row 80 cols)'), 
+        ('5', 'sentence: (5 rows 80 cols'), 
+        ('15', 'paragraph(s): (15 rows 80 cols)')], default='short')
     correct = models.TextField(blank=True)
     sequence = GenericRelation(
         'QuestionSequenceItem', related_query_name='questions')
+    responses = GenericRelation('QuestionResponse')
 
-    def get_form_class(self):
-        return locate('questions.forms.TextQuestionResponseForm')
+    def get_input_widget(self):
+        widget_attrs = {
+            'rows': self.input_size,
+            'cols': '80',
+            'style': 'resize: vertical'
+        }
+        return forms.CharField(label=self.display_text, widget=forms.Textarea(attrs=widget_attrs))
 
     def correct_answer(self):
-        try:
-            return self.correct
-        except:
-            return None
+        return self.correct
+
+    def check_answer(self, answer):
+        return answer == self.correct_answer()
 
     def user_response(self, user):
+        """
+        Returns the first response found by the user.
+        """
         try:
-            response = GenericRelation('QuestionResponse', related_query_name='user_response')
-            return TextQuestionResponse.objects.filter(user=user.id).get(question=self.id)
+            return self.responses.all().get(user=user)
         except:
             return None
 
@@ -66,29 +77,39 @@ class OptionQuestion(AbstractQuestion):
 
     sequence = GenericRelation(
         'QuestionSequenceItem', related_query_name='questions')
+    responses = GenericRelation('QuestionResponse')
 
-    def get_form_class(self):
-        return locate('questions.forms.OptionQuestionResponseForm')
+    def get_input_widget(self):
+        if self.input_select == 'checkbox':
+            field_widget = forms.CheckboxSelectMultiple()
+            return forms.MultipleChoiceField(label=self.display_text, choices=self.options_list(), widget=field_widget)
+        else:
+            field_widget = forms.RadioSelect()
+            return forms.ChoiceField(label=self.display_text, choices=self.options_list(), widget=field_widget)
 
     def options_list(self):
         options = []
-        correct = []
         for i in self.options.all():
-            option = []
-            option.append(i.id)
-            option.append(i.display_text)
+            option = i.id, i.display_text
             options.append(option)
         return options
 
     def correct_answer(self):
+        return self.options.filter(correct=True)
+
+    def check_answer(self, answer):
         try:
-            return self.options.filter(correct=True)[0]
+            opt = Option.objects.get(pk=answer)
+            return opt.correct
         except:
-            return None
+            return False
 
     def user_response(self, user):
+        """
+        Returns the first response found for the user.
+        """
         try:
-            return OptionQuestionResponse.objects.filter(user=user.id).get(question=self.id)
+            return self.responses.all().get(user=user)
         except:
             return None
 
@@ -106,11 +127,23 @@ class Option(models.Model):
     def __unicode__(self):
         return self.display_text
 
+
 class QuestionResponse(TimeStampedModel):
-    user = models.ForeignKey(User, related_name='user_response')
+    user = models.ForeignKey(User, related_name='question_responses')
+    response = models.TextField()
+
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
+
+    def save(self, *args, **kwargs):
+        self.response = json.dumps(self.response)
+        super(QuestionResponse, self).save(*args, **kwargs)
+
+    # Fix this to contruct arguments relative to question sequence object
+    # def get_absolute_url(self):
+    #     return reverse('question_response', args=[str(''), str('')])
+
 
 class OptionQuestionResponse(TimeStampedModel):
     user = models.ForeignKey(User)
