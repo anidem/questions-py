@@ -2,8 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse_lazy
 from django.views.generic import FormView, TemplateView, CreateView, UpdateView, ListView
 
-from .models import TextQuestion, OptionQuestion, QuestionResponse, OptionQuestionResponse, TextQuestionResponse, QuestionSequence, QuestionSequenceItem
-from .forms import QuestionResponseForm, OptionQuestionResponseForm, TextQuestionResponseForm
+from .models import TextQuestion, OptionQuestion, QuestionResponse, QuestionSequence, QuestionSequenceItem
+from .forms import QuestionResponseForm
 
 class HomeView(ListView):
     model = QuestionSequence

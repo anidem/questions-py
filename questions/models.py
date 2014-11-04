@@ -35,8 +35,8 @@ class TextQuestion(AbstractQuestion):
     A question type that accepts text input.
     """
     input_size = models.CharField(max_length=64, choices=[
-        ('1', 'short answer: (1 row 80 cols)'), 
-        ('5', 'sentence: (5 rows 80 cols'), 
+        ('1', 'short answer: (1 row 80 cols)'),
+        ('5', 'sentence: (5 rows 80 cols'),
         ('15', 'paragraph(s): (15 rows 80 cols)')], default='short')
     correct = models.TextField(blank=True)
     sequence = GenericRelation(
@@ -54,12 +54,12 @@ class TextQuestion(AbstractQuestion):
     def correct_answer(self):
         return self.correct
 
-    def check_answer(self, answer):
-        return answer == self.correct_answer()
+    def check_answer(self, json_str):
+        return json_str == self.correct
 
-    def user_response(self, user):
+    def user_response_object(self, user):        
         """
-        Returns the first response found by the user.
+        Returns a QuestionResponse object related to user.
         """
         try:
             return self.responses.all().get(user=user)
@@ -88,40 +88,30 @@ class OptionQuestion(AbstractQuestion):
             return forms.ChoiceField(label=self.display_text, choices=self.options_list(), widget=field_widget)
 
     def options_list(self):
-        options = []
-        for i in self.options.all():
-            option = i.id, i.display_text
-            options.append(option)
-        return options
+        return [(i.id, i.display_text) for i in self.options.all()]
 
     def correct_answer(self):
-        return self.options.filter(correct=True)
+        if self.input_select == 'checkbox':
+            return [str(i.id) for i in self.options.filter(correct=True)]
+        else:
+            return str(self.options.get(correct=True).id)
 
-    def check_answer(self, answer):
-        # Return false if at least 1 incorrect selection found.
-        # TODO: fix by implementing list comparisons for checkbox selections.
+    def check_answer(self, json_str):
+        # Need to process option responses as lists. json used to coerce
+        # string representation to list.
         try:
-            if self.input_select == 'checkbox':               
-                for i in answer:
-                    opt = Option.objects.get(pk=i)
-                    if not opt.correct: 
-                        return False
-                return True
-            else:  
-                opt = Option.objects.get(pk=answer)
-                return opt.correct
+            return self.correct_answer() == json_str
         except:
-            return False
+            print 'error doing json compare check'
 
-    def user_response(self, user):
+    def user_response_object(self, user):
         """
-        Returns the first response found for the user.
+        Returns a QuestionResponse object related to user.
         """
         try:
-            return self.responses.all().get(user=user)
+            return self.responses.get(user=user)
         except:
             return None
-
 
 class Option(models.Model):
 
@@ -138,6 +128,9 @@ class Option(models.Model):
 
 
 class QuestionResponse(TimeStampedModel):
+    """
+    Generic question response container. 
+    """
     user = models.ForeignKey(User, related_name='question_responses')
     response = models.TextField()
 
@@ -145,40 +138,19 @@ class QuestionResponse(TimeStampedModel):
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
 
+    def json_response(self):
+        try:
+            return json.loads(self.response)
+        except:
+            return None        
+
     def save(self, *args, **kwargs):
         self.response = json.dumps(self.response)
         super(QuestionResponse, self).save(*args, **kwargs)
 
     # Fix this to contruct arguments relative to question sequence object
-    # def get_absolute_url(self):
-    #     return reverse('question_response', args=[str(''), str('')])
-
-
-class OptionQuestionResponse(TimeStampedModel):
-    user = models.ForeignKey(User)
-    question = models.ForeignKey(OptionQuestion)
-    response = models.ForeignKey(Option)
-
-    def __unicode__(self):
-        return self.response.display_text
-
     def get_absolute_url(self):
-        return reverse('option_response', args=[str(self.question.id)])
-
-
-class TextQuestionResponse(TimeStampedModel):
-
-    """
-    """
-    user = models.ForeignKey(User)
-    question = models.ForeignKey(TextQuestion)
-    response = models.TextField()
-
-    def __unicode__(self):
-        return self.response
-
-    def get_absolute_url(self):
-        return reverse('text_response', args=[str(self.question.id)])
+        return reverse('home')
 
 
 class QuestionSequence(models.Model):
