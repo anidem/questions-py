@@ -10,8 +10,43 @@ import json
 
 from model_utils.models import TimeStampedModel
 
-# from questions.forms import *
+class QuestionSequence(models.Model):
 
+    """
+    A wrapper for set of questions of any defined type. This class models the
+    notion of a worksheet of questions e.g., OptionQuestion or TextQuestion
+    """
+    title = models.CharField(max_length=256)
+    description = models.TextField()
+    slug = models.SlugField(blank=True)
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.title)
+        super(QuestionSequence, self).save(*args, **kwargs)
+
+    def __unicode__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        return reverse('question_response', args=[self.slug, '1'])
+
+
+class QuestionSequenceItem(models.Model):
+
+    """
+    Functions as a list of questions for QuestionSequence.
+    Allow QuestionSequences to contain varied question types.
+    Content objects reference types derived from Abstract Question.
+    """
+    order = models.IntegerField(default=0)
+    question_sequence = models.ForeignKey(
+        QuestionSequence, related_name='questions')
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    class Meta:
+        ordering = ['order']
 
 class AbstractQuestion(models.Model):
 
@@ -37,10 +72,10 @@ class TextQuestion(AbstractQuestion):
     input_size = models.CharField(max_length=64, choices=[
         ('1', 'short answer: (1 row 80 cols)'),
         ('5', 'sentence: (5 rows 80 cols'),
-        ('15', 'paragraph(s): (15 rows 80 cols)')], default='short')
+        ('15', 'paragraph(s): (15 rows 80 cols)')], default='1')
     correct = models.TextField(blank=True)
     sequence = GenericRelation(
-        'QuestionSequenceItem', related_query_name='questions')
+        QuestionSequenceItem, related_query_name='questions')
     responses = GenericRelation('QuestionResponse')
 
     def get_input_widget(self):
@@ -76,7 +111,7 @@ class OptionQuestion(AbstractQuestion):
         'radio', 'single responses'), ('checkbox', 'multiple responses')], default='radio')
 
     sequence = GenericRelation(
-        'QuestionSequenceItem', related_query_name='questions')
+        QuestionSequenceItem, related_query_name='questions')
     responses = GenericRelation('QuestionResponse')
 
     def get_input_widget(self):
@@ -153,36 +188,4 @@ class QuestionResponse(TimeStampedModel):
         return reverse('home')
 
 
-class QuestionSequence(models.Model):
 
-    """
-    A wrapper for set of questions of any defined type. This class models the
-    notion of a worksheet of questions e.g., OptionQuestion or TextQuestion
-    """
-    title = models.CharField(max_length=256)
-    description = models.TextField()
-    slug = models.SlugField(blank=True)
-
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.title)
-        super(QuestionSequence, self).save(*args, **kwargs)
-
-    def __unicode__(self):
-        return self.title
-
-    def get_absolute_url(self):
-        return reverse('question_response', args=[self.slug, '1'])
-
-
-class QuestionSequenceItem(models.Model):
-
-    """
-    Functions as a list of questions for QuestionSequence.
-    Allow QuestionSequences to contain varied question types.
-    """
-    order = models.IntegerField(default=0)
-    question_sequence = models.ForeignKey(
-        QuestionSequence, related_name='questions')
-    content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')

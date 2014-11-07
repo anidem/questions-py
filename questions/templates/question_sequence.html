@@ -4,11 +4,13 @@
 
 {% block content %}
     <h1> {{ worksheet }} </h1>
-    <div class="col-md-6">
-        {% for i in question_list  %}
+    <div class="col-md-6 question_list">
+        {% for k, v in question_list.items %}
             <p>
-                <span class="badge default">{{ forloop.counter }}</span>
-                <a href="/questions/{{ worksheet.slug }}/{{ forloop.counter }}"> {{ i.content_object }}</a>
+                <span class="label label-{{ v }}">{{ forloop.counter }}</span>
+                <a href="/questions/{{ worksheet.slug }}/{{ forloop.counter }}">
+                    {{ k }}
+                </a>
             </p>
         {% endfor %}
     </div>
