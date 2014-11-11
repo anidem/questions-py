@@ -1,10 +1,13 @@
 from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.views.generic import FormView, TemplateView, CreateView, UpdateView, ListView, DetailView
+from django.forms.models import inlineformset_factory, modelformset_factory
+
 from collections import OrderedDict
 
 from .models import TextQuestion, OptionQuestion, QuestionResponse, QuestionSequence, QuestionSequenceItem, Option
-from .forms import QuestionResponseForm
+from .forms import QuestionResponseForm, OptionQuestionUpdateForm, TextQuestionUpdateForm, OptionFormset 
 
 import os, json
 
@@ -23,9 +26,7 @@ class QuestionResponseView(CreateView):
 
     def get_initial(self):
         self.sequence = get_object_or_404(QuestionSequence, slug=self.kwargs.pop('i'))
-        # question_item = get_object_or_404(self.sequence.questions, pk=self.kwargs.pop('j'))
-        sequence_items = self.sequence.questions.all()
-        
+        sequence_items = self.sequence.sequence_items.all()
         item = sequence_items[ int(self.kwargs.pop('j'))-1 ]
         self.initial['question'] = item.content_object
         self.initial['user'] = self.request.user
@@ -37,7 +38,7 @@ class QuestionResponseView(CreateView):
         
         # Tally -- move this to object manager...
         tally = OrderedDict()
-        for i in self.sequence.questions.all():
+        for i in self.sequence.sequence_items.all():
             
             try: 
                 response = i.content_object.user_response_object(self.request.user).json_response()
@@ -51,9 +52,11 @@ class QuestionResponseView(CreateView):
             if self.initial['question'].id == i.content_object.id:
                 tally[i.content_object] = tally[i.content_object] + ' current'
         
+        if self.request.user.is_staff:
+            context['edit_url'] = self.initial['question'].get_edit_url()
+
         context['question_list'] = tally   
         return context
-
 
 class QuestionSequenceItemsListView(ListView):
     model = QuestionSequenceItem
@@ -120,31 +123,56 @@ class ImportJsonQuestion(DetailView):
         return context
 
 
+class TextQuestionView(DetailView):
+    model = TextQuestion
+    template_name = 'question_view.html'
+
+class TextQuestionUpdateView(UpdateView):
+    model = TextQuestion
+    template_name = 'question_update.html'
+    form_class = TextQuestionUpdateForm
+
+class OptionQuestionView(DetailView):
+    model = OptionQuestion
+    template_name = 'question_view.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super(OptionQuestionView, self).get_context_data(**kwargs)
+        context['options'] = self.get_object().options_list()
+        return context
+
+class OptionQuestionUpdateView(UpdateView):
+    model = OptionQuestion
+    template_name = 'question_update.html'
+    form_class = OptionQuestionUpdateForm
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        optionsform = OptionFormset(instance=self.get_object())
+        return self.render_to_response(
+            self.get_context_data(form=form, optionsform=optionsform))
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        optionsform = OptionFormset(self.request.POST, instance=self.get_object())
+        if form.is_valid() and optionsform.is_valid():
+            return self.form_valid(form, optionsform)
+        else:
+            return self.form_invalid(form, optionsform)
+
+    def form_valid(self, form, optionsform):
+        self.object = form.save()
+        optionsform.instance = self.object
+        optionsform.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def form_invalid(self, form, optionsform):
+        return self.render_to_response(
+            self.get_context_data(form=form, optionsform=optionsform))
 
 
 
-
-
-
-
-# class OptionQuestionResponseCreateView(CreateView):
-#     model = OptionQuestionResponse
-#     form_class = OptionQuestionResponseForm
-#     template_name = 'question.html'
-
-#     def get_initial(self):
-#         question = OptionQuestion.objects.get(id=self.kwargs.pop('i'))
-#         self.initial['question'] = question
-#         self.initial['user'] = self.request.user
-#         return self.initial
-
-# class TextQuestionResponseCreateView(CreateView):
-#     model = TextQuestionResponse
-#     form_class = TextQuestionResponseForm
-#     template_name = 'question.html'
-
-#     def get_initial(self):
-#         question = TextQuestion.objects.get(id=self.kwargs.pop('i'))
-#         self.initial['question'] = question
-#         self.initial['user'] = self.request.user
-#         return self.initial

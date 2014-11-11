@@ -2,7 +2,8 @@
 from django.contrib.contenttypes.models import ContentType
 from django import forms
 from django.forms import ModelForm
-from .models import QuestionResponse
+from django.forms.models import inlineformset_factory, BaseInlineFormSet
+from .models import QuestionResponse, OptionQuestion, TextQuestion, Option
 
 
 class QuestionResponseForm(ModelForm):
@@ -69,4 +70,34 @@ class QuestionResponseForm(ModelForm):
             'user': forms.HiddenInput(),
             'content_type': forms.HiddenInput(),
             'object_id': forms.HiddenInput()
+        }
+
+class OptionQuestionUpdateForm(ModelForm):
+    class Meta:
+        model = OptionQuestion
+        fields = ['display_text', 'display_order', 'input_select']
+        widgets = {
+            'display_text': forms.Textarea(attrs={'rows': 5, 'cols': 70}),
+            'display_order': forms.NumberInput(attrs={'min': -99, 'max': 99})
+        }
+
+class OptionUpdateForm(ModelForm):
+    class Meta:
+        model = Option
+        fields = ['display_order', 'display_text', 'correct']
+        widgets = {
+            'display_text': forms.TextInput(attrs={'size': 40 }),
+            'display_order': forms.NumberInput(attrs={'min': -99, 'max': 99})
+        }
+
+OptionFormset = inlineformset_factory(OptionQuestion, Option, extra=1, form=OptionUpdateForm)
+
+class TextQuestionUpdateForm(ModelForm):
+    class Meta:
+        model = TextQuestion
+        fields = ['display_text', 'display_order', 'correct', 'input_size']
+        widgets = {
+            'display_text': forms.Textarea(attrs={'rows': 5, 'cols': 70}),
+            'display_order': forms.NumberInput(attrs={'min': -99, 'max': 99}),
+            'correct': forms.Textarea(attrs={'rows': 1, 'cols': 70})
         }

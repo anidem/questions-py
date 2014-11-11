@@ -40,7 +40,7 @@ class QuestionSequenceItem(models.Model):
     """
     order = models.IntegerField(default=0)
     question_sequence = models.ForeignKey(
-        QuestionSequence, related_name='questions')
+        QuestionSequence, related_name='sequence_items')
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
@@ -78,6 +78,7 @@ class TextQuestion(AbstractQuestion):
         QuestionSequenceItem, related_query_name='questions')
     responses = GenericRelation('QuestionResponse')
 
+
     def get_input_widget(self):
         widget_attrs = {
             'rows': self.input_size,
@@ -100,6 +101,13 @@ class TextQuestion(AbstractQuestion):
             return self.responses.all().get(user=user)
         except:
             return None
+
+    def get_edit_url(self):
+        return reverse('text_question_update', args=[self.id])
+
+    def get_absolute_url(self):
+        return reverse('text_question', args=[self.id])
+
 
 
 class OptionQuestion(AbstractQuestion):
@@ -147,6 +155,12 @@ class OptionQuestion(AbstractQuestion):
             return self.responses.get(user=user)
         except:
             return None
+
+    def get_edit_url(self):
+        return reverse('option_question_update', args=[self.id])
+
+    def get_absolute_url(self):
+        return reverse('option_question', args=[self.id])
 
 class Option(models.Model):
 

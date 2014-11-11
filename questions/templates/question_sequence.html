@@ -4,7 +4,18 @@
 
 {% block content %}
     <h1> {{ worksheet }} </h1>
+    <div class="col-md-6">
+
+        <form id="response_form" action="" method="post">{% csrf_token %}
+            {{ form.as_p }}
+            {{ optionform.as_p }}
+            <input id="chk_response_btn" type="submit" value="Check Your Answer">
+        </form>
+
+    </div> 
+
     <div class="col-md-6 question_list">
+        <a href="{{ edit_url }}">{{ edit_url }}</a>
         {% for k, v in question_list.items %}
             <p>
                 <span class="label label-{{ v }}">{{ forloop.counter }}</span>
@@ -16,12 +27,5 @@
     </div>
 
 
-    <div class="col-md-6">
 
-        <form id="response_form" action="" method="post">{% csrf_token %}
-            {{ form.as_p }}
-            <input id="chk_response_btn" type="submit" value="Check Your Answer">
-        </form>
-
-    </div>
 {% endblock content %}

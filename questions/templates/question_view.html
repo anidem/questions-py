@@ -1,0 +1,11 @@
+<!-- question_view.html -->
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+    <h1>{{ object }}</h1>
+
+    {% for opt in options  %}
+        <h2><input type="radio" name="radios"> {{ opt.1 }} </input></h2>
+    {% endfor %}
+{% endblock content %}
