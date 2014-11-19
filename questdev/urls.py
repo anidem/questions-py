@@ -5,7 +5,8 @@ from questions.views import (
     HomeView, QuestionResponseView, QuestionSequenceItemsListView, 
     OptionQuestionView, OptionQuestionUpdateView,
     TextQuestionView, TextQuestionUpdateView,
-    ImportJsonQuestion
+    ImportJsonQuestion,
+    NoteView, NoteCreateView
     )
 
 urlpatterns = patterns('',
@@ -18,10 +19,12 @@ urlpatterns = patterns('',
     url(r'^questions/textquestions/update/(?P<pk>\d+)/$', TextQuestionUpdateView.as_view(), name='text_question_update'),
 
 
-    url(r'^questions/(?P<i>[-\w]+)/(?P<j>\d+)/$', QuestionResponseView.as_view(), name='question_response'),
+    url(r'^questions/(?P<i>\d+)/(?P<j>\d+)/$', QuestionResponseView.as_view(), name='question_response'),
     url(r'^questions/import/(?P<slug>[-\w]+)/$', ImportJsonQuestion.as_view(), name='question_import'),
 
-   
+    url(r'^note/(?P<pk>\d+)/$', NoteView.as_view(), name='view_note'),
+    url(r'^note/add/$', NoteCreateView.as_view(), name='create_note'), # ajaxable
+
     url(r'^admin/', include(admin.site.urls)),
 )
 

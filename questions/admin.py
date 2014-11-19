@@ -5,7 +5,7 @@ from django import forms
 
 
 from .models import (TextQuestion, OptionQuestion, Option,
-                     QuestionResponse, QuestionSequence, QuestionSequenceItem)
+                     QuestionResponse, QuestionSet, QuestionSequenceItem)
 
 
 class OptionInlineAdmin(admin.TabularInline):
@@ -23,5 +23,5 @@ admin.site.register(TextQuestion)
 admin.site.register(OptionQuestion, OptionQuestionAdmin)
 admin.site.register(Option)
 admin.site.register(QuestionResponse)
-admin.site.register(QuestionSequence)
+admin.site.register(QuestionSet)
 admin.site.register(QuestionSequenceItem)

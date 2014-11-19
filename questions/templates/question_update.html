@@ -4,7 +4,7 @@
 
 {% block content %}
     <h1></h1>
-    <form action="." method="post">{% csrf_token %}
+    <form action="." method="post" {% if  optionsform %} enctype="multipart/form-data" {% endif %}>{% csrf_token %}
         <div class="row">
             <div class="col-md-6">
                 <legend>Question</legend>
@@ -48,3 +48,7 @@
         </div>
     </form>
 {% endblock content %}
+{% block js_include %} 
+    <script src="//tinymce.cachefly.net/4.1/tinymce.min.js"></script>
+    <script>tinymce.init({selector:'textarea.editor'});</script>
+{% endblock js_include %}

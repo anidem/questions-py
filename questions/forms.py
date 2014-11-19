@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django import forms
 from django.forms import ModelForm
 from django.forms.models import inlineformset_factory, BaseInlineFormSet
-from .models import QuestionResponse, OptionQuestion, TextQuestion, Option
+from .models import QuestionResponse, OptionQuestion, TextQuestion, Option, Note
 
 
 class QuestionResponseForm(ModelForm):
@@ -30,10 +30,10 @@ class QuestionResponseForm(ModelForm):
             # Set user feedback info (correct or incorrect response)
             if question.check_answer(response):
                 self.fields[
-                    'response'].help_text = '<span class="label label-success">correct</span>'
+                    'response'].help_text = 'success'
             else:
                 self.fields[
-                    'response'].help_text = '<span class="label label-danger">incorrect</span>'
+                    'response'].help_text = 'danger'
 
         except:
             pass
@@ -72,12 +72,13 @@ class QuestionResponseForm(ModelForm):
             'object_id': forms.HiddenInput()
         }
 
-class OptionQuestionUpdateForm(ModelForm):
+class OptionQuestionUpdateForm(ModelForm):      
+
     class Meta:
         model = OptionQuestion
-        fields = ['display_text', 'display_order', 'input_select']
+        fields = ['display_text', 'display_order', 'input_select', 'display_image']
         widgets = {
-            'display_text': forms.Textarea(attrs={'rows': 5, 'cols': 70}),
+            'display_text': forms.Textarea(attrs={'rows': 5, 'cols': 50, 'class': 'editor'}),
             'display_order': forms.NumberInput(attrs={'min': -99, 'max': 99})
         }
 
@@ -95,9 +96,20 @@ OptionFormset = inlineformset_factory(OptionQuestion, Option, extra=1, form=Opti
 class TextQuestionUpdateForm(ModelForm):
     class Meta:
         model = TextQuestion
-        fields = ['display_text', 'display_order', 'correct', 'input_size']
+        fields = ['display_text', 'display_order', 'correct', 'input_size', 'display_image']
         widgets = {
-            'display_text': forms.Textarea(attrs={'rows': 5, 'cols': 70}),
+            'display_text': forms.Textarea(attrs={'rows': 5, 'cols': 50, 'class': 'editor'}),
             'display_order': forms.NumberInput(attrs={'min': -99, 'max': 99}),
-            'correct': forms.Textarea(attrs={'rows': 1, 'cols': 70})
+            'correct': forms.Textarea(attrs={'rows': 1, 'cols': 50, 'style': 'resize: vertical'})
         }
+
+class CreateNoteForm(ModelForm):
+    class Meta:
+        model = Note
+        fields = ['subject', 'text']
+        widgets = {
+            'text': forms.Textarea(attrs={'rows': 5, 'cols': 30, 'class': 'editor', 'style': 'resize: vertical' })
+        }
+
+
+
