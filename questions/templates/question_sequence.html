@@ -66,7 +66,7 @@
 
                 <a href="{% url 'question_response' worksheet.id forloop.counter %}">
                     <div class="col-md-4" style="">
-                        {% if forloop.counter == question_position  %}<i class="fa fa-circle text-default"></i>{% endif %}
+                        <i class="fa fa-circle fa-6" style="{% if forloop.counter == question_position  %}color: blue{% else %}color: white{% endif %}" ></i>
                         <span class="text-{{ v }}">{{ forloop.counter }}</span>
                     </div>
                     <div class="col-md-4">
